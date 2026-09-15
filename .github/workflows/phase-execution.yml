@@ -1,0 +1,47 @@
+name: Phase Execution (IronClaw Agent)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'PHASE_*.md'
+      - 'TRUTH.md'
+      - 'apps/**'
+      - 'packages/**'
+  workflow_dispatch:
+
+jobs:
+  execute-phase:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Detect Current Phase
+        id: phase
+        run: |
+          if grep -q "- \[x\] \*\*PHASE 1\*\*" TRUTH.md; then
+            echo "current_phase=2" >> $GITHUB_OUTPUT
+          elif grep -q "- \[x\] \*\*PHASE 2\*\*" TRUTH.md; then
+            echo "current_phase=3" >> $GITHUB_OUTPUT
+          else
+            echo "current_phase=1" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Trigger IronClaw Agent
+        env:
+          AGENT_HOST: baremetal06.agents.near.ai
+          AGENT_PORT: 20358
+          AGENT_USER: agent
+          CURRENT_PHASE: ${{ steps.phase.outputs.current_phase }}
+        run: |
+          echo "Triggering IronClaw for Phase ${CURRENT_PHASE}"
+          ssh -p ${AGENT_PORT} ${AGENT_USER}@${AGENT_HOST} \
+            "/workspace/ironclaw-runner.sh 'Execute Phase ${CURRENT_PHASE} of SCF project. Read PHASE_${CURRENT_PHASE}.md for requirements. Implement all tasks, run tests, commit results to GitHub with phase summary.'"
+
+      - name: Validate Phase Completion
+        run: |
+          echo "Phase execution triggered. Waiting for results..."
+          # In production, this would poll for commit updates
+          # For now, manual validation is required
+
