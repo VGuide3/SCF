@@ -1,0 +1,23 @@
+{
+  "name": "scf",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Web3 Transaction Compiler, Relayer & Execution Platform",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.0",
+    "prettier": "^3.3.0"
+  }
+}
